@@ -5,12 +5,15 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import session from 'express-session';
 
 dotenv.config();
+console.log("Google Client ID:", process.env.GOOGLE_CLIENT_ID);
+console.log("Google Client Secret:", process.env.GOOGLE_CLIENT_SECRET);
+
 
 const app = express();
 
 // Session configuration
 app.use(session({
-    secret: 'your_secret_key', // Replace with your own secret and ideally store it in .env
+    secret: 'secret_key', // Replace with your own secret and ideally store it in .env
     resave: true,
     saveUninitialized: true
 }));
@@ -22,7 +25,7 @@ passport.use(new GoogleStrategy({
     callbackURL: "http://localhost:3001/oauth2callback"
 },
     function (accessToken, refreshToken, profile, cb) {
-        // Here you can save the profile information to your user database if needed
+        // profile info to your user database
         return cb(null, profile);
     }
 ));
@@ -40,13 +43,13 @@ app.use(passport.session());
 
 // Routes
 app.get('/auth/google',
-    passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/youtube'] }));
+    passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/youtube', 'profile'] }));
 
 app.get('/oauth2callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     function (req, res) {
         console.log('Google user profile:', req.user);
-        // Successful authentication, redirect home or to another page.
+
         res.redirect('/');
     });
 app.get('/', function (req, res) {
@@ -54,9 +57,9 @@ app.get('/', function (req, res) {
 });
 
 
-// Add other routes as needed
 
-// Start the server
+
+
 app.listen(3001, () => {
     console.log('Server started on http://localhost:3001');
 });
