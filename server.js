@@ -10,10 +10,11 @@ const helmet = require('helmet');
 const http = require('https');
 const axios = require('axios');
 const multer = require('multer');
-const path = require('path');
 const KnexSessionStore = require('connect-session-knex')(session);
 const HMS = require("@100mslive/server-sdk");
-
+const path = require("path");
+const HMSClientWeb = require('./hmsClientWeb.js');
+require("express-async-errors")
 // Initialize dotenv configuration
 dotenv.config();
 const knex = require('knex')(require('./knexfile.js'));
@@ -24,7 +25,7 @@ const hmsClient = new HMS.SDK(process.env.ACCESS_KEY, process.env.ACCESS_SECRET)
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        cb(null, path.join('public/uploads/'));
     },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -36,7 +37,7 @@ const upload = multer({ storage: storage });
 const app = express();
 
 // Enable serving static files from 'uploads' directory
-app.use('/uploads', express.static('uploads'));
+app.use(express.static('public'));
 
 // Initialize HTTP Headers middleware
 app.use(helmet());
@@ -55,7 +56,7 @@ const store = new KnexSessionStore({
     knex: knex,
     tablename: 'sessions',
     sidfieldname: 'sid',
-    clearInterval: 30 * 1000,
+    clearInterval: 30 * 1000 * 60,
 });
 
 // Configure session
@@ -64,23 +65,37 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: 'auto', maxAge: 30 * 1000 }
+    cookie: { secure: 'auto', maxAge: 30 * 1000 * 60 }
 }));
 
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use((req, res, next) => {
-    knex('sessions')
-        .select('expired')
-        .where({ sid: req.sessionID })
-        .then((date) => {
-            const serverDate = date[0]?.expired;
-            res.cookie('expirationDate', serverDate);
-            next();
-        });
+app.use(async (req, res, next) => {
+
+    if (!req.session.userId)
+        return next()
+
+    const users = await knex('users').where({ id: req.session.userId })
+    if (users[0]) {
+        req.user = users[0]
+    }
+    next()
 })
+
+app.use((err, req, res, next) => {
+    console.error(err.stack)
+    console.error(err.message);
+    if (err.response) {
+
+        console.log(err.response.config.url)
+        console.log("Body -- ")
+        console.log(err.response.body)
+    }
+    res.status(500).json({ message: err.message })
+})
+
 
 // Passport configuration for Google OAuth
 passport.use(new GoogleStrategy({
@@ -89,7 +104,7 @@ passport.use(new GoogleStrategy({
     callbackURL: "http://localhost:3001/oauth2callback"
 }, function (accessToken, refreshToken, profile, cb) {
     // Handle user data returned by Google
-    console.log("accessToken ", accessToken, refreshToken, profile, cb);
+
     knex('users')
         .select('id')
         .where({ google_id: profile.id })
@@ -97,7 +112,7 @@ passport.use(new GoogleStrategy({
             if (user.length) {
                 cb(null, user[0]);
             } else {
-                console.log("insert");
+
                 knex('users')
                     .insert({
                         username: profile._json.name,
@@ -105,11 +120,11 @@ passport.use(new GoogleStrategy({
                         avatar_url: profile._json.picture,
                     })
                     .then((userId) => {
-                        console.log("insert user id ", userId);
+
                         cb(null, { id: userId[0] });
                     })
                     .catch((err) => {
-                        console.log('Error creating a user', err);
+
                     });
             }
         })
@@ -133,6 +148,9 @@ passport.deserializeUser(function (obj, done) {
 
 // Profile update endpoint with avatar upload
 app.post('/profile', upload.single('avatar'), (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ message: "Not logged in" })
+    }
     // Assuming user ID is stored in the session or token
     const userId = req.user.id;
 
@@ -144,7 +162,7 @@ app.post('/profile', upload.single('avatar'), (req, res) => {
 
     // If an avatar file is uploaded, update the avatarUrl
     if (req.file) {
-        avatarUrl = '/uploads/' + req.file.filename;
+        avatarUrl = "http://localhost:3001/uploads/" + req.file.filename
     }
 
     // Update user information in the database
@@ -171,64 +189,103 @@ app.post('/profile', upload.single('avatar'), (req, res) => {
         });
 });
 
+app.post('/updateRoom', async (req, res) => {
+
+    const name = req.body.roomName;
+    const roomId = req.body.roomId;
+
+    try {
+        const params = { name };
+        const updatedRoom = await hmsClient.rooms.update(roomId, params);
+
+        res.status(200).json(updatedRoom);
+    } catch (e) {
+        res.status(201).json({ 'error': e.message });
+    }
+});
 
 // Endpoint for creating a room
-app.get('/createRoom', async (req, res) => {
-    const name = "michaeldemo2";
+app.post('/createRoom', async (req, res) => {
+    const name = req.body.room;
     const roomCreateOptions = {
         'name': name,
         "description": 'testing',
         'template_id': '655ab832c75a69c5f8103515',
     };
-    const roomWithOptions = await hmsClient.rooms.create(roomCreateOptions);
-    console.log('roomWithOptions', roomWithOptions);
-    res.status(200).json(roomWithOptions);
+
+    try {
+
+        const roomWithOptions = await hmsClient.rooms.create(roomCreateOptions);
+        res.status(200).json(roomWithOptions);
+    } catch (e) {
+
+        res.status(201).json({ 'error': e.message });
+    }
 });
 
 // Endpoint for getting room list
-app.get('/getrooms2', async (req, res) => {
-    const roomWithOptions = hmsClient.rooms.list();
-    console.log('roomWithOptions', roomWithOptions);
-    for await (const session of roomWithOptions) {
-        if (!roomWithOptions.isNextCached) {
-            console.log("the next loop is gonna take some time");
-        }
+app.get('/getrooms', async (req, res) => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const authToken = await hmsClient.auth.getManagementToken()
+    const hmsClientWeb = new HMSClientWeb(authToken?.token)
+
+
+    let rooms = await hmsClientWeb.getRooms({ enabled: true, after: yesterday })
+
+    if (rooms && rooms.length > 0) {
+        rooms = rooms.filter(item => {
+
+            return true
+            return new Date(item.created_at) > yesterday;
+        })
+
     }
-    res.status(200).json(roomWithOptions);
+
+    res.status(200).json(rooms);
 });
 
 // Endpoint for getting rooms with specific details
-app.get('/getrooms', async (req, res) => {
+app.get('/getrooms2', async (req, res) => {
     const result = await axios.get('https://api.100ms.live/v2/live-streams', {
         headers: {
-            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA4Mjg1NjUsImV4cCI6MTcwMDkxNDk2NSwianRpIjoiand0X25vbmNlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MDA4Mjg1NjUsImFjY2Vzc19rZXkiOiI2NTU3OWJjZTY4MTExZjZmZTRiNTdlNDIifQ.nCnCqJNcbMq1IjJefG1cHeSWQYtOXnVgsj5q15Vp0FY'
+            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA5NTE0NTUsImV4cCI6MTcwMTAzNzg1NSwianRpIjoiand0X25vbmNlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MDA5NTE0NTUsImFjY2Vzc19rZXkiOiI2NTU3OWJjZTY4MTExZjZmZTRiNTdlNDIifQ.L-ro4k4g9ILBxIiQr_UBJUFOpxQuyg2iOJda7fI6uVU'
         },
-        params: { room_id: '6560b0d6afd3b2853348d72c' }
     });
-    const data = result.data.data;
-    console.log('result ', ' ==========\n\n', data);
+
+    const data = result.data.data.filter(item => item.status === 'running');
+
     res.status(200).json(data);
 });
 
+app.get("/me", async (req, res) => {
+    if (req.session.userId) {
+        const user = await knex("users").where({ id: req.session.userId })
+        return res.json({ userId: req.session.userId, user: user[0] })
+    } else {
+        return res.status(401).json({ message: "Not logged in" })
+    }
+})
 // Endpoint for user authentication
 app.post('/authenticate', async (req, res) => {
-    console.log('req.session.user', req.sessionID);
+    // 
     const result = await client.verifyIdToken({
         idToken: req.body.token,
         audience: process.env.GOOGLE_CLIENT_ID
     });
-    console.log('auth ', result.getPayload());
+    // 
     const payload = result.getPayload();
-    console.log(req.session.uid, payload.sub);
-    knex('sessions');
+
     knex('users')
         .select('id')
         .where({ google_id: payload.sub })
         .then((user) => {
             if (user.length) {
+
+                req.session.userId = user[0].id
                 res.status(200).json({ "status": 200, message: "found existing user" });
             } else {
-                console.log("insert");
+
                 knex('users')
                     .insert({
                         username: payload.name,
@@ -237,18 +294,20 @@ app.post('/authenticate', async (req, res) => {
                         email: payload.email,
                     })
                     .then((userId) => {
-                      
-                        console.log("insert user id ", userId);
+
+
+                        req.session.userId = userId
+
                         res.status(200).json({ "status": 200, message: "Created user" });
                     })
                     .catch((err) => {
-                        console.log('Error creating a user', err);
-                        res.status(400).json({ message:" Error creating user" });
+
+                        res.status(400).json({ message: " Error creating user" });
                     });
             }
         })
         .catch((err) => {
-            console.log('Error fetching a user', err);
+
             res.status(400).json({ "status": 200 });
         });
 });
@@ -260,7 +319,7 @@ app.get('/auth/google',
 app.get('/oauth2callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     function (req, res) {
-        console.log('Google user profile:', req.user.id);
+
         res.redirect('/');
     });
 
@@ -271,7 +330,7 @@ app.get('/', function (req, res) {
 
 // Test endpoint
 app.get('/test', function (req, res) {
-    console.log(req.sessionID);
+
     res.status(200).json({ 'msg': 'test', 'cookie': req.cookies });
 });
 
