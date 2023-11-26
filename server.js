@@ -49,10 +49,31 @@ app.use(express.json());
 
 
 // Enable CORS
-app.use(cors({
-    origin: ['http://localhost:3000', process.env.REACT_FRONTEND_URL],
-    credentials: true,
-}));
+// app.use(cors({
+//     origin: ['http://localhost:3000', process.env.REACT_FRONTEND_URL],
+//     credentials: true,
+// }));
+
+app.use((req, res, next) => {
+    // Set the Access-Control-Allow-Origin to the incoming Origin value
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+
+    // Allow credentials
+    res.header('Access-Control-Allow-Credentials', true);
+
+    // Set headers that are allowed in CORS
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+    // Set methods that are allowed in CORS
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
 
 // Configure session storage
 const store = new KnexSessionStore({
