@@ -85,7 +85,7 @@ const store = new KnexSessionStore({
 
 // Configure session
 
-console.log(process.env);
+//console.log(process.env);
 app.set('trust proxy', 1)
 console.log('cookieSettings', { maxAge: 30 * 1000 * 60, sameSite:"none", secure:process.env.NODE_ENV=="production"  })
 app.use(session({
@@ -93,7 +93,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie:  {  maxAge: 30 * 1000 * 60, sameSite:"none", secure:process.env.NODE_ENV=="production"? "true":'auto'  }
+    cookie:  {  maxAge: 30 * 1000 * 60, sameSite:process.env.NODE_ENV=="production"? "none":'lax', secure:process.env.NODE_ENV=="production"? "true":'auto'  }
 
    // cookie: process.env.NODE_ENV === "production" ? { secure: true, maxAge: 30 * 1000 * 60, sameSite: "None", httpOnly: true } : { secure: 'auto', maxAge: 30 * 1000 * 60 }
 }));

@@ -133,6 +133,8 @@ const getRooms = async (req, res) => {
     if (err.response) {
 
         console.log(err.response.config.url)
+        console.log(JSON.stringify(err.response.config))
+
         console.log("Body -- ")
         console.log(err.response.body)
     }
