@@ -85,6 +85,7 @@ const store = new KnexSessionStore({
 
 // Configure session
 
+console.log(process.env);
 app.use(session({
     store: store,
     secret: process.env.SESSION_SECRET,
