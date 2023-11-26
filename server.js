@@ -91,7 +91,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie:  { secure: 'auto', maxAge: 30 * 1000 * 60, sameSite:"none"  }
+    cookie:  { secure: 'auto', maxAge: 30 * 1000 * 60, sameSite:"none", secure:process.env.NODE_ENV=="production"  }
 
    // cookie: process.env.NODE_ENV === "production" ? { secure: true, maxAge: 30 * 1000 * 60, sameSite: "None", httpOnly: true } : { secure: 'auto', maxAge: 30 * 1000 * 60 }
 }));
