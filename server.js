@@ -18,6 +18,7 @@ const roomRouter = require('./routes/room.js')
 require("express-async-errors")
 // Initialize dotenv configuration
 dotenv.config();
+
 const knex = require('knex')(require('./knexfile.js'));
 
 // HMS SDK Client Initialization
