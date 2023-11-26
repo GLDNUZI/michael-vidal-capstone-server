@@ -187,12 +187,13 @@ const authenticate = async (req, res) => {
                         res.status(200).json({ "status": 200, message: "Created user" });
                     })
                     .catch((err) => {
-
+                        console.error(err)
                         res.status(400).json({ message: " Error creating user" });
                     });
             }
         })
         .catch((err) => {
+            con
 
             res.status(400).json({ "status": 200 });
         });
