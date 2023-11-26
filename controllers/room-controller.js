@@ -111,6 +111,7 @@ const getRooms = async (req, res) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const authToken = await hmsClient.auth.getManagementToken()
+    console.log({authToken})
     const hmsClientWeb = new HMSClientWeb(authToken?.token)
 
 
