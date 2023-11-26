@@ -146,20 +146,20 @@ const getRooms = async (req, res) => {
 } 
 
 // Endpoint for getting rooms with specific details
-const getrooms2 = async (req, res) => {
-    const authToken = await hmsClient.auth.getManagementToken()
-    // 'Authorization': `Bearer ${authToken}`
+// const getrooms2 = async (req, res) => {
+//     const authToken = await hmsClient.auth.getManagementToken()
+//     // 'Authorization': `Bearer ${authToken}`
 
-    const result = await axios.get('https://api.100ms.live/v2/live-streams', {
-        headers: {
-            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDEwMjE2ODAsImV4cCI6MTcwMTEwODA4MCwianRpIjoiand0X25vbmNlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MDEwMjE2ODAsImFjY2Vzc19rZXkiOiI2NTU3OWJjZTY4MTExZjZmZTRiNTdlNDIifQ.kcZyj2s8UbBGMlqty-3qqasgWfqgQfiRVWY1pbzo81c'
-        },
-    });
+//     const result = await axios.get('https://api.100ms.live/v2/live-streams', {
+//         headers: {
+//             'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDEwMjE2ODAsImV4cCI6MTcwMTEwODA4MCwianRpIjoiand0X25vbmNlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MDEwMjE2ODAsImFjY2Vzc19rZXkiOiI2NTU3OWJjZTY4MTExZjZmZTRiNTdlNDIifQ.kcZyj2s8UbBGMlqty-3qqasgWfqgQfiRVWY1pbzo81c'
+//         },
+//     });
 
-    const data = result.data.data.filter(item => item.status === 'running');
+//     const data = result.data.data.filter(item => item.status === 'running');
 
-    res.status(200).json(data);
-}
+//     res.status(200).json(data);
+// }
 
 
 const getMe = async (req, res) => {
@@ -230,7 +230,7 @@ module.exports = {
     updateRoom,
     createRoom,
     getRooms,
-    getrooms2,
+    //getrooms2,
     getMe,
     authenticate
 };

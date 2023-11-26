@@ -35,7 +35,7 @@ router.post('/createRoom', roomController.createRoom);
 router.get('/getrooms', roomController.getRooms);
 
 // Endpoint for getting rooms with running status details
-router.get('/getrooms2', roomController.getrooms2);
+//router.get('/getrooms2', roomController.getrooms2);
 
 router.get("/me", roomController.getMe)
 // Endpoint for user authentication
