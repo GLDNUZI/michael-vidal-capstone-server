@@ -169,6 +169,7 @@ const authenticate = async (req, res) => {
             if (user.length) {
 
                 req.session.userId = user[0].id
+                console.log({user})
                 res.status(200).json({ "status": 200, message: "found existing user" });
             } else {
 
@@ -193,7 +194,7 @@ const authenticate = async (req, res) => {
             }
         })
         .catch((err) => {
-            con
+            
 
             res.status(400).json({ "status": 200 });
         });
