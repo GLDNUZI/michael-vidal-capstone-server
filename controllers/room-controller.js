@@ -12,7 +12,9 @@ const client = new OAuth2Client();
 const HMS = require("@100mslive/server-sdk");
 const HMSClientWeb = require('../hmsClientWeb.js');
 const axios = require('axios');
+
 const hmsClient = new HMS.SDK(process.env.ACCESS_KEY, process.env.ACCESS_SECRET);
+console.log(process.env.ACCESS_KEY, process.env.ACCESS_SECRET)
 
 require('dotenv').config();
 
