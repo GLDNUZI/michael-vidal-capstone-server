@@ -84,12 +84,13 @@ const store = new KnexSessionStore({
 });
 
 // Configure session
+
 app.use(session({
     store: store,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: 'auto', maxAge: 30 * 1000 * 60 }
+    cookie: process.env.NODE_ENV === "production" ? {secure: true, maxAge: 30*1000*60, sameSite: "none", httpOnly: true} : { secure: 'auto', maxAge: 30 * 1000 * 60 }
 }));
 
 // Initialize Passport
