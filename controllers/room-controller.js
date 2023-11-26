@@ -107,6 +107,7 @@ const createRoom = async (req, res) => {
 }
 
 const getRooms = async (req, res) => {
+    try {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const authToken = await hmsClient.auth.getManagementToken()
@@ -125,7 +126,19 @@ const getRooms = async (req, res) => {
     }
 
     res.status(200).json(rooms);
+} catch (err) {
+    console.error(err.stack)
+    console.error(err.message);
+    if (err.response) {
+
+        console.log(err.response.config.url)
+        console.log("Body -- ")
+        console.log(err.response.body)
+    }
+    res.status(500).json({ message: err.message })
+
 }
+} 
 
 // Endpoint for getting rooms with specific details
 const getrooms2 = async (req, res) => {
