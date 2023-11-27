@@ -94,6 +94,7 @@ const createRoom = async (req, res) => {
     const roomCreateOptions = {
         'name': name,
         "description": 'testing',
+        'template_id': '655ab832c75a69c5f8103515',
     };
 
     try {
