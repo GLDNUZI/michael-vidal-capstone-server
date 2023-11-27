@@ -31,7 +31,6 @@ const upload = multer({ storage: storage });
 // Profile update endpoint with avatar upload
 
 const getProfile = async (req, res) => {
-    console.log(' get profile');
     if (!req.user) {
         return res.status(401).json({ message: "Not logged in" })
     }
@@ -92,13 +91,13 @@ const createRoom = async (req, res) => {
     const roomCreateOptions = {
         'name': name,
         "description": 'testing',
-        'template_id': '655ab832c75a69c5f8103515',
     };
 
     try {
 
-        const roomWithOptions = await hmsClient.rooms.create(roomCreateOptions);
-        res.status(200).json(roomWithOptions);
+        const result = await hmsClient.rooms.create(roomCreateOptions);
+        console.log(result);
+        res.status(200).json(result);
     } catch (e) {
 
         res.status(201).json({ 'error': e.message });
@@ -107,46 +106,34 @@ const createRoom = async (req, res) => {
 }
 
 const getRooms = async (req, res) => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const authToken = await hmsClient.auth.getManagementToken()
-    const hmsClientWeb = new HMSClientWeb(authToken?.token)
+    try {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const authToken = await hmsClient.auth.getManagementToken()
+        const hmsClientWeb = new HMSClientWeb(authToken?.token)
 
 
-    let rooms = await hmsClientWeb.getRooms({ enabled: true, after: yesterday })
+        let rooms = await hmsClientWeb.getRooms({ enabled: true, limit: 100 })
 
-    if (rooms && rooms.length > 0) {
-        rooms = rooms.filter(item => {
+        if (rooms && rooms.length > 0) {
+            rooms = rooms.filter(item => {
 
-            return true
-            return new Date(item.created_at) > yesterday;
-        })
+                // return true
+                return new Date(item.created_at) > yesterday;
+            })
+
+        }
+
+        res.status(200).json(rooms);
+    } catch (err) {
+        res.status(500).json({ message: err.message })
 
     }
-
-    res.status(200).json(rooms);
 }
-
-// Endpoint for getting rooms with specific details
-const getrooms2 = async (req, res) => {
-    const authToken = await hmsClient.auth.getManagementToken()
-    // 'Authorization': `Bearer ${authToken}`
-
-    const result = await axios.get('https://api.100ms.live/v2/live-streams', {
-        headers: {
-            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDEwMjE2ODAsImV4cCI6MTcwMTEwODA4MCwianRpIjoiand0X25vbmNlIiwidHlwZSI6Im1hbmFnZW1lbnQiLCJ2ZXJzaW9uIjoyLCJuYmYiOjE3MDEwMjE2ODAsImFjY2Vzc19rZXkiOiI2NTU3OWJjZTY4MTExZjZmZTRiNTdlNDIifQ.kcZyj2s8UbBGMlqty-3qqasgWfqgQfiRVWY1pbzo81c'
-        },
-    });
-
-    const data = result.data.data.filter(item => item.status === 'running');
-
-    res.status(200).json(data);
-}
-
 
 const getMe = async (req, res) => {
     if (req.session.userId) {
-     
+
         const user = await knex("users").where({ id: req.session.userId.toString() })
         return res.json({ userId: req.session.userId, user: user[0] })
     } else {
@@ -211,7 +198,6 @@ module.exports = {
     updateRoom,
     createRoom,
     getRooms,
-    getrooms2,
     getMe,
     authenticate
 };
