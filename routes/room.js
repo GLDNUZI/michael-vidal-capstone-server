@@ -23,6 +23,8 @@ router.post('/profile', upload.single('avatar'), roomController.getProfile);
 
 router.post('/updateRoom', roomController.updateRoom);
 
+router.post('/disableRoom', roomController.updateRoomStatus);
+
 // Endpoint for creating a room
 router.post('/createRoom', roomController.createRoom);
 

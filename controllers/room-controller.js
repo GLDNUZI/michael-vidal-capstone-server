@@ -75,6 +75,7 @@ const getProfile = async (req, res) => {
 }
 
 const updateRoom = async (req, res) => {
+    // receing data from client request object, entered by user
     const name = req.body.roomName;
     const roomId = req.body.roomId;
 
@@ -98,6 +99,30 @@ const createRoom = async (req, res) => {
     try {
 
         const result = await hmsClient.rooms.create(roomCreateOptions);
+        // console.log(result, !result.enabled, result && !result.enabled);
+        if (result && !result.enabled) {
+            const result2 = await hmsClient.rooms.enableOrDisable(result.id, true);
+            console.log('create room', result2);
+        }
+
+        res.status(200).json(result);
+    } catch (e) {
+        console.log('creat err', e);
+
+        res.status(201).json({ 'error': e.message });
+    }
+
+}
+
+
+
+
+const updateRoomStatus = async (req, res) => {
+    const roomId = req.body.roomid;
+
+
+    try {
+        const result = await hmsClient.rooms.enableOrDisable(roomId, false)
         console.log(result);
         res.status(200).json(result);
     } catch (e) {
@@ -120,7 +145,7 @@ const getRooms = async (req, res) => {
         if (rooms && rooms.length > 0) {
             rooms = rooms.filter(item => {
 
-                // return true
+
                 return new Date(item.created_at) > yesterday;
             })
 
@@ -202,5 +227,6 @@ module.exports = {
     createRoom,
     getRooms,
     getMe,
+    updateRoomStatus,
     authenticate
 };
