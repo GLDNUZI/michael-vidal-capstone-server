@@ -3,11 +3,6 @@ const express = require('express');
 const router = express.Router();
 
 const passport = require('passport');
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client();
-const HMSClientWeb = require('../hmsClientWeb.js');
-const axios = require('axios');
-const knex = require('knex')(require('../knexfile.js'));
 const roomController = require('../controllers/room-controller.js');
 require('dotenv').config();
 
@@ -34,9 +29,6 @@ router.post('/createRoom', roomController.createRoom);
 // Endpoint for getting room list
 router.get('/getrooms', roomController.getRooms);
 
-// Endpoint for getting rooms with running status details
-//router.get('/getrooms2', roomController.getrooms2);
-
 router.get("/me", roomController.getMe)
 // Endpoint for user authentication
 router.post('/authenticate', roomController.authenticate);
@@ -44,12 +36,6 @@ router.post('/authenticate', roomController.authenticate);
 // Google OAuth routes
 router.get('/auth/google',
 	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/youtube', 'profile'] }));
-
-router.get('/oauth2callback',
-	passport.authenticate('google', { failureRedirect: '/login' }),
-	function (req, res) {
-		res.redirect('/');
-	});
 
 // Default route
 router.get('/', function (req, res) {
