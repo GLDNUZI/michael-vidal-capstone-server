@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 const express = require('express');
 const passport = require('passport');
-const GoogleStraxtegy = require('passport-google-oauth20').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 // const cors = require('cors');
 const helmet = require('helmet');
