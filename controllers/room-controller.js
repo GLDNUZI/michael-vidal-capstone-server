@@ -131,7 +131,7 @@ const getRooms = async (req, res) => {
         const authToken = await hmsClient.auth.getManagementToken(); // Get management token from HMS SDK
         const hmsClientWeb = new HMSClientWeb(authToken?.token); // Initialize custom HMS client web module
 
-        let rooms = await hmsClientWeb.getRooms({ enabled: true, limit: 100 }); // Get rooms from HMS SDK
+        let rooms = await hmsClientWeb.getRooms({ enabled: true, limit: 100 }) || []; // Get rooms from HMS SDK
 
         console.log(rooms);
         if (rooms && rooms.length > 0) {
