@@ -35,6 +35,14 @@ router.get("/me", roomController.getMe)
 // Endpoint for user authentication
 router.post('/authenticate', roomController.authenticate);
 
+router.post('/handleRecording', roomController.handleRecording);
+
+router.post('/listRecordings', roomController.listRecordings);
+
+// https://localhost:3001/urlRecordings?asset_id=656641b4f3e94c98426c0a92
+
+router.get('/urlRecordings', roomController.urlRecordings);
+
 // Google OAuth routes
 router.get('/auth/google',
 	passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/youtube', 'profile'] }));
