@@ -6,12 +6,12 @@ const session = require('express-session');
 // const cors = require('cors');
 const helmet = require('helmet');
 const KnexSessionStore = require('connect-session-knex')(session);
-const roomRouter = require('./routes/room.js')
+const roomRouter = require('../routes/room.js')
 require("express-async-errors")
 // Initialize dotenv configuration
 dotenv.config();
 
-const knex = require('knex')(require('./knexfile.js'));
+const knex = require('knex')(require('../knexfile.js'));
 
 // Initialize Express app
 const app = express();
@@ -156,7 +156,12 @@ app.get('/oauth2callback',
         res.redirect('/');
     });
 
+app.post("/100msWebhook", (req, res) => {
+    console.log(req.body) // Call your action on the request here
+    res.status(200).end() // Responding is important
+})
 // Start the server
 app.listen(process.env.PORT || 3001, () => {
     console.log('Server started on http://localhost:3001');
 });
+
