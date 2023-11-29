@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 // Profile update endpoint with avatar upload
-router.post('/profile', upload.single('avatar'), roomController.getProfile);
+// router.post('/profile', upload.single('avatar'), roomController.getProfile);
 
 router.post('/updateRoom', roomController.updateRoom);
 
@@ -31,9 +31,9 @@ router.post('/createRoom', roomController.createRoom);
 // Endpoint for getting room list
 router.get('/getrooms', roomController.getRooms);
 
-router.get("/me", roomController.getMe)
+// router.get("/me", roomController.getMe);
 // Endpoint for user authentication
-router.post('/authenticate', roomController.authenticate);
+// router.post('/authenticate', roomController.authenticate);
 
 router.post('/handleRecording', roomController.handleRecording);
 

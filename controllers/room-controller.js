@@ -1,5 +1,5 @@
 // Importing required modules and initializing them
-const knex = require('knex')(require('../knexfile')); // Initialize Knex with database configuration
+// const knex = require('knex')(require('../knexfile')); // Initialize Knex with database configuration
 const passport = require('passport'); // Passport library for authentication
 require('dotenv').config(); // Load environment variables from .env file
 const express = require('express'); // Express framework for web applications
@@ -32,45 +32,45 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }); // Initialize multer with the defined storage
 
 // Function to get user profile
-const getProfile = async (req, res) => {
-    if (!req.user) {
-        // Check if the user is logged in
-        return res.status(401).json({ message: "Not logged in" });
-    }
-    const userId = req.user.id; // Retrieve user ID from the request
-    const { username, email } = req.body; // Extract username and email from request body
-    let avatarUrl = req.user.avatar_url || 'default_avatar_url'; // Set default or existing avatar URL
+// const getProfile = async (req, res) => {
+//     if (!req.user) {
+//         // Check if the user is logged in
+//         return res.status(401).json({ message: "Not logged in" });
+//     }
+//     const userId = req.user.id; // Retrieve user ID from the request
+//     const { username, email } = req.body; // Extract username and email from request body
+//     let avatarUrl = req.user.avatar_url || 'default_avatar_url'; // Set default or existing avatar URL
 
-    if (req.file) {
-        // Check if an avatar file is uploaded
-        avatarUrl = "http://localhost:3001/uploads/" + req.file.filename; // Update avatar URL
-    }
+//     if (req.file) {
+//         // Check if an avatar file is uploaded
+//         avatarUrl = "http://localhost:3001/uploads/" + req.file.filename; // Update avatar URL
+//     }
 
-    // Update user information in the database
-    knex('users')
-        .where({ id: userId })
-        .update({
-            username: username,
-            email: email,
-            avatar_url: avatarUrl
-        })
-        .then(() => {
-            // Respond with updated user information
-            res.json({
-                message: 'Profile updated successfully',
-                updatedData: {
-                    username: username,
-                    email: email,
-                    avatar_url: avatarUrl
-                }
-            });
-        })
-        .catch(err => {
-            // Handle errors during database update
-            console.error('Error updating user profile:', err);
-            res.status(500).json({ message: 'Error updating profile' });
-        });
-};
+//     // Update user information in the database
+//     knex('users')
+//         .where({ id: userId })
+//         .update({
+//             username: username,
+//             email: email,
+//             avatar_url: avatarUrl
+//         })
+//         .then(() => {
+//             // Respond with updated user information
+//             res.json({
+//                 message: 'Profile updated successfully',
+//                 updatedData: {
+//                     username: username,
+//                     email: email,
+//                     avatar_url: avatarUrl
+//                 }
+//             });
+//         })
+//         .catch(err => {
+//             // Handle errors during database update
+//             console.error('Error updating user profile:', err);
+//             res.status(500).json({ message: 'Error updating profile' });
+//         });
+// };
 
 // Function to update a room
 const updateRoom = async (req, res) => {
@@ -225,55 +225,55 @@ const urlRecordings = async (req, res) => {
 //     }
 // }
 
-// Function to get current user information
-const getMe = async (req, res) => {
-    if (req.session.userId) {
-        const user = await knex("users").where({ id: req.session.userId.toString() }); // Query user from database
-        return res.json({ userId: req.session.userId, user: user[0] }); // Send user information
-    } else {
-        return res.status(401).json({ message: "Not logged in" }); // Handle not logged in case
-    }
-};
+// // Function to get current user information
+// const getMe = async (req, res) => {
+//     if (req.session.userId) {
+//         const user = await knex("users").where({ id: req.session.userId.toString() }); // Query user from database
+//         return res.json({ userId: req.session.userId, user: user[0] }); // Send user information
+//     } else {
+//         return res.status(401).json({ message: "Not logged in" }); // Handle not logged in case
+//     }
+// };
 
-// Function for user authentication
-const authenticate = async (req, res) => {
-    const result = await client.verifyIdToken({
-        idToken: req.body.token,
-        audience: process.env.GOOGLE_CLIENT_ID // Google client ID for verification
-    });
-    const payload = result.getPayload(); // Extract payload from token
+// // Function for user authentication
+// const authenticate = async (req, res) => {
+//     const result = await client.verifyIdToken({
+//         idToken: req.body.token,
+//         audience: process.env.GOOGLE_CLIENT_ID // Google client ID for verification
+//     });
+//     const payload = result.getPayload(); // Extract payload from token
 
-    knex('users')
-        .select('id')
-        .where({ google_id: payload.sub }) // Query user from database using Google ID
-        .then((user) => {
-            if (user.length) {
-                req.session.userId = user[0].id; // Set session user ID
-                console.log({ user });
-                res.status(200).json({ "status": 200, message: "found existing user" }); // User found
-            } else {
-                // User not found, create new user
-                knex('users')
-                    .insert({
-                        username: payload.name,
-                        google_id: payload.sub,
-                        avatar_url: payload.picture,
-                        email: payload.email,
-                    })
-                    .then((userId) => {
-                        req.session.userId = userId; // Set session user ID
-                        res.status(200).json({ "status": 200, message: "Created user" }); // User created
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                        res.status(400).json({ message: " Error creating user" }); // Handle errors
-                    });
-            }
-        })
-        .catch((err) => {
-            res.status(400).json({ "status": 200 }); // Handle errors
-        });
-};
+//     knex('users')
+//         .select('id')
+//         .where({ google_id: payload.sub }) // Query user from database using Google ID
+//         .then((user) => {
+//             if (user.length) {
+//                 req.session.userId = user[0].id; // Set session user ID
+//                 console.log({ user });
+//                 res.status(200).json({ "status": 200, message: "found existing user" }); // User found
+//             } else {
+//                 // User not found, create new user
+//                 knex('users')
+//                     .insert({
+//                         username: payload.name,
+//                         google_id: payload.sub,
+//                         avatar_url: payload.picture,
+//                         email: payload.email,
+//                     })
+//                     .then((userId) => {
+//                         req.session.userId = userId; // Set session user ID
+//                         res.status(200).json({ "status": 200, message: "Created user" }); // User created
+//                     })
+//                     .catch((err) => {
+//                         console.error(err);
+//                         res.status(400).json({ message: " Error creating user" }); // Handle errors
+//                     });
+//             }
+//         })
+//         .catch((err) => {
+//             res.status(400).json({ "status": 200 }); // Handle errors
+//         });
+// };
 
 // Test function
 const getTest = async (req, res) => {
@@ -282,14 +282,14 @@ const getTest = async (req, res) => {
 
 // Export the module with all functions
 module.exports = {
-    getProfile,
+    // getProfile,
     getTest,
     updateRoom,
     createRoom,
     getRooms,
-    getMe,
+    // getMe,
     updateRoomStatus,
-    authenticate,
+    // authenticate,
     handleRecording,
     listRecordings,
     urlRecordings
