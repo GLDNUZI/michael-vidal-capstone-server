@@ -6,12 +6,12 @@ const session = require('express-session');
 // const cors = require('cors');
 const helmet = require('helmet');
 const KnexSessionStore = require('connect-session-knex')(session);
-const roomRouter = require('../routes/room.js')
+const roomRouter = require('./routes/room.js')
 require("express-async-errors")
 // Initialize dotenv configuration
 dotenv.config();
 
-const knex = require('knex')(require('../knexfile.js'));
+const knex = require('knex')(require('./knexfile.js'));
 
 // Initialize Express app
 const app = express();
