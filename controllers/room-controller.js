@@ -176,13 +176,17 @@ const listRecordings = async (req, res) => {
     console.log('listRecordings', req.body);
     const roomId = req.body.roomId;
     console.log('query ', roomId);
+    const HOUR = 60 * 60 * 1000;
+    const dateBeforeHour = new Date();
+    dateBeforeHour.setTime(dateBeforeHour.getTime() - HOUR); // Calculate date for yesterday
+
     try {
         const authToken = await hmsClient.auth.getManagementToken(); // Get management token from HMS SDK
         const hmsClientWeb = new HMSClientWeb(authToken?.token); // Initialize custom HMS client web module
 
         const result = await hmsClientWeb.listRecording({ room_id: roomId, limit: 10 }); // Get rooms from HMS SDK
         console.log('listRecordings result', result);
-        const mp4s = result.filter(item => item.path.endsWith('.mp4'));
+        const mp4s = result.filter(item => item.path.endsWith('.mp4') && dateBeforeHour < new Date(item.created_at));
         mp4s.length = Math.min(mp4s.length, 5);
         console.log('listRecordings mp4s', mp4s);
         res.status(200).json(mp4s); // Send rooms information
