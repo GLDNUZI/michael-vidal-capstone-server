@@ -14,6 +14,8 @@ console.log(process.env.ACCESS_KEY, process.env.ACCESS_SECRET);
 
 // Duplicate dotenv configuration (not necessary if already loaded)
 require('dotenv').config();
+const template_id = process.env.TEMPLATE_ID;
+
 
 // Route setup for Google OAuth2 authentication
 router.get('/google', passport.authenticate('google'));
@@ -92,7 +94,7 @@ const createRoom = async (req, res) => {
     const roomCreateOptions = {
         'name': roomName,
         "description": 'testing',
-        'template_id': '655ab832c75a69c5f8103515',
+        'template_id': template_id,
     };
 
     try {
