@@ -5,13 +5,13 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 // const cors = require('cors');
 const helmet = require('helmet');
-const KnexSessionStore = require('connect-session-knex')(session);
+// const KnexSessionStore = require('connect-session-knex')(session);
 const roomRouter = require('./routes/room.js')
 require("express-async-errors")
 // Initialize dotenv configuration
 dotenv.config();
 
-const knex = require('knex')(require('./knexfile.js'));
+// const knex = require('knex')(require('./knexfile.js'));
 
 // Initialize Express app
 const app = express();
@@ -53,18 +53,18 @@ app.use((req, res, next) => {
     }
 });
 
-// Configure session storage
-const store = new KnexSessionStore({
-    knex: knex,
-    tablename: 'sessions',
-    sidfieldname: 'sid',
-    clearInterval: 30 * 1000 * 60,
-});
+// // Configure session storage
+// const store = new KnexSessionStore({
+//     knex: knex,
+//     tablename: 'sessions',
+//     sidfieldname: 'sid',
+//     clearInterval: 30 * 1000 * 60,
+// });
 
 // Configure session
 app.set('trust proxy', 1)
 app.use(session({
-    store: store,
+    // store: store,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
@@ -77,17 +77,17 @@ app.use(passport.session());
 app.use('/', roomRouter);
 
 
-app.use(async (req, res, next) => {
+// app.use(async (req, res, next) => {
 
-    if (!req.session.userId)
-        return next()
+//     if (!req.session.userId)
+//         return next()
 
-    const users = await knex('users').where({ id: req.session.userId })
-    if (users[0]) {
-        req.user = users[0]
-    }
-    next()
-})
+//     const users = await knex('users').where({ id: req.session.userId })
+//     if (users[0]) {
+//         req.user = users[0]
+//     }
+//     next()
+// })
 
 app.use((err, req, res, next) => {
     console.error(err.stack)
@@ -102,42 +102,42 @@ app.use((err, req, res, next) => {
 })
 
 
-// Passport configuration for Google OAuth
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3001/oauth2callback"
-}, function (accessToken, refreshToken, profile, cb) {
-    // Handle user data returned by Google
+// // Passport configuration for Google OAuth
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.GOOGLE_CLIENT_ID,
+//     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//     callbackURL: "http://localhost:3001/oauth2callback"
+// }, function (accessToken, refreshToken, profile, cb) {
+//     // Handle user data returned by Google
 
-    knex('users')
-        .select('id')
-        .where({ google_id: profile.id })
-        .then((user) => {
-            if (user.length) {
-                cb(null, user[0]);
-            } else {
+//     knex('users')
+//         .select('id')
+//         .where({ google_id: profile.id })
+//         .then((user) => {
+//             if (user.length) {
+//                 cb(null, user[0]);
+//             } else {
 
-                knex('users')
-                    .insert({
-                        username: profile._json.name,
-                        google_id: profile.id,
-                        avatar_url: profile._json.picture,
-                    })
-                    .then((userId) => {
+//                 knex('users')
+//                     .insert({
+//                         username: profile._json.name,
+//                         google_id: profile.id,
+//                         avatar_url: profile._json.picture,
+//                     })
+//                     .then((userId) => {
 
-                        cb(null, { id: userId[0] });
-                    })
-                    .catch((err) => {
+//                         cb(null, { id: userId[0] });
+//                     })
+//                     .catch((err) => {
 
-                    });
-            }
-        })
-        .catch((err) => {
-            console.log('Error fetching a user', err);
-        });
-    return cb(null, profile);
-}));
+//                     });
+//             }
+//         })
+//         .catch((err) => {
+//             console.log('Error fetching a user', err);
+//         });
+//     return cb(null, profile);
+// }));
 
 // Serialize user for session
 passport.serializeUser(function (user, done) {
