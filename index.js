@@ -3,7 +3,7 @@ const express = require('express');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
-const cors = require('cors');
+// const cors = require('cors');
 const helmet = require('helmet');
 // const KnexSessionStore = require('connect-session-knex')(session);
 const roomRouter = require('./routes/room.js')
@@ -27,7 +27,10 @@ app.use(express.json());
 
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3000', process.env.REACT_FRONTEND_URL],
+    credentials: true,
+}));
 
 app.use((req, res, next) => {
     // Set the Access-Control-Allow-Origin to the incoming Origin value
