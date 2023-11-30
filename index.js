@@ -27,10 +27,10 @@ app.use(express.json());
 
 
 // Enable CORS
-app.use(cors({
-    origin: ['http://localhost:3000', process.env.REACT_FRONTEND_URL],
-    credentials: true,
-}));
+// app.use(cors({
+//     origin: ['http://localhost:3000', process.env.REACT_FRONTEND_URL],
+//     credentials: true,
+// }));
 
 app.use((req, res, next) => {
     // Set the Access-Control-Allow-Origin to the incoming Origin value
